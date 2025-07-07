@@ -74,7 +74,7 @@
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    // Размер canvas по экрану
+    // Размер canvas под экран
     function resizeCanvas() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -83,7 +83,7 @@
     window.addEventListener("resize", resizeCanvas);
 
     const paddleWidth = 10;
-    const paddleHeight = canvas.height / 5;
+    let paddleHeight = canvas.height / 5;
 
     const player = { x: 0, y: canvas.height / 2 - paddleHeight / 2, dy: 0 };
     const ai = { x: canvas.width - paddleWidth, y: canvas.height / 2 - paddleHeight / 2 };
@@ -95,6 +95,9 @@
       dx: 5,
       dy: 3
     };
+
+    let playerScore = 0;
+    let aiScore = 0;
 
     function drawRect(x, y, w, h, color) {
       ctx.fillStyle = color;
@@ -109,14 +112,23 @@
       ctx.fill();
     }
 
+    function drawScore() {
+      ctx.fillStyle = "#fff";
+      ctx.font = "40px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText(`${playerScore} : ${aiScore}`, canvas.width / 2, 50);
+    }
+
     function draw() {
       drawRect(0, 0, canvas.width, canvas.height, "#000");
       drawRect(player.x, player.y, paddleWidth, paddleHeight, "#fff");
       drawRect(ai.x, ai.y, paddleWidth, paddleHeight, "#fff");
       drawCircle(ball.x, ball.y, ball.radius, "#fff");
+      drawScore();
     }
 
     function update() {
+      paddleHeight = canvas.height / 5;
       player.y += player.dy;
       if (player.y < 0) player.y = 0;
       if (player.y + paddleHeight > canvas.height) player.y = canvas.height - paddleHeight;
@@ -156,12 +168,22 @@
       }
 
       // Гол
-      if (ball.x < 0 || ball.x > canvas.width) {
-        ball.x = canvas.width / 2;
-        ball.y = canvas.height / 2;
-        ball.dx = -ball.dx;
-        ball.dy = (Math.random() * 4 - 2);
+      if (ball.x < 0) {
+        aiScore++;
+        resetBall();
       }
+
+      if (ball.x > canvas.width) {
+        playerScore++;
+        resetBall();
+      }
+    }
+
+    function resetBall() {
+      ball.x = canvas.width / 2;
+      ball.y = canvas.height / 2;
+      ball.dx = -ball.dx;
+      ball.dy = Math.random() * 4 - 2;
     }
 
     function gameLoop() {
@@ -170,7 +192,7 @@
       requestAnimationFrame(gameLoop);
     }
 
-    // Управление с клавиатуры
+    // Управление клавишами
     document.addEventListener("keydown", (e) => {
       if (e.key === "w") player.dy = -5;
       if (e.key === "s") player.dy = 5;
@@ -186,7 +208,6 @@
 
     btnUp.addEventListener("touchstart", () => player.dy = -5);
     btnUp.addEventListener("touchend", () => player.dy = 0);
-
     btnDown.addEventListener("touchstart", () => player.dy = 5);
     btnDown.addEventListener("touchend", () => player.dy = 0);
 
